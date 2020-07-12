@@ -114,7 +114,6 @@
 
                     frameIval = setInterval(() => {
                         if (editFrame.contentWindow.location.href && !editFrame.contentWindow.location.href.includes('edit-listing')) {
-                            // editFrame.setAttribute('style', 'width: calc(100vw - 100px); height: calc(100vh - 100px); left: 50px; top: 50px; position: fixed; z-index: 10000; border-radius: 6px; display: none');
                             try {
                                 if (!editFrame.contentWindow.document.querySelector('.listing__image .carousel__inner img')) {
                                     return;
@@ -197,7 +196,7 @@
                         clearInterval(waitIval);
                         setTimeout(() => {
                             shareElem.click();
-                        }, 1000);
+                        }, getRandomInt(500, 1500));
                     }
                 }, 50);
             }
