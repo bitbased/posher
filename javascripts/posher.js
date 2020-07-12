@@ -2,6 +2,8 @@
 // @name         Posher
 // @namespace    posher.bitbased.net
 // @version      0.4
+// @updateURL    https://github.com/bitbased/posher/raw/master/posher.user.js
+// @downloadURL  https://github.com/bitbased/posher/raw/master/posher.user.js
 // @description  Poshmark assistant
 // @author       bitbased
 // @match        https://poshmark.com/*
