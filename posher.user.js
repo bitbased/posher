@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Posher
 // @namespace    posher.bitbased.net
-// @version      0.5
+// @version      0.6
 // @updateURL    https://github.com/bitbased/posher/raw/master/posher.user.js
 // @downloadURL  https://github.com/bitbased/posher/raw/master/posher.user.js
 // @description  Poshmark assistant
@@ -38,6 +38,132 @@
         let actionsListElem = tile.getElementsByClassName('listing-actions-con')[0];
         let actionsBarElem = tile.getElementsByClassName('social-action-bar')[0]
 
+        if (actionsBarElem && actionsBarElem.getElementsByClassName('social-action-bar__share-followers').length === 0) {
+            // create publish button
+            `<div class="d--fl ai--c social-action-bar__action social-action-bar__share-followers"><i class="icon feed"></i></div>`
+            let shareElem = actionsBarElem.getElementsByClassName('social-action-bar__share')[0];
+            let publishElem = document.createElement('div');
+            let publishIconElem = document.createElement('i');
+
+            publishElem.setAttribute('class', 'd--fl ai--c social-action-bar__action social-action-bar__share-followers share-followers');
+            publishIconElem.setAttribute('class', 'icon feed');
+
+            publishElem.appendChild(publishIconElem);
+            actionsBarElem.appendChild(publishElem);
+
+            shareElem.addEventListener('click', (e) => {
+                publishIconElem.setAttribute('class', 'icon progress-bar-checkmark');
+            });
+
+            publishElem.onclick = (e) => {
+                actionsBarElem.getElementsByClassName('social-action-bar__share')[0].click();
+                publishIconElem.setAttribute('class', 'icon progress-bar-checkmark');
+                let waitIval;
+                waitIval = setInterval(() => {
+                    let shareElem = document.getElementsByClassName('share-wrapper-container')[0];
+                    let shareModal = document.getElementsByClassName('share-modal')[0];
+                    if (shareElem && shareModal) {
+                        // shareModal.setAttribute('style', 'display: none');
+                        clearInterval(waitIval);
+                        setTimeout(() => {
+                            shareElem.click();
+                        }, getRandomInt(500, 1500));
+                    }
+                }, 50);
+            }
+
+            // replace comment with edit button for own listings
+            if (tile.getElementsByClassName('tile__creator')[0].getAttribute('href').endsWith('/' + username)) {
+                let commentElem = actionsBarElem.getElementsByClassName('social-action-bar__comment')[0];
+
+                let editElem = document.createElement('div');
+                let editLinkElem = document.createElement('a');
+                let editIconElem = document.createElement('i');
+                editElem.setAttribute('class', 'd--fl ai--c social-action-bar__action social-action-bar__edit-listing edit-listing');
+                editLinkElem.setAttribute('class', 'edit-link');
+                editIconElem.setAttribute('class', 'icon pencil');
+
+                editLinkElem.setAttribute('href', '/edit-listing/' + tile.getElementsByClassName('tile__covershot')[0].getAttribute('data-et-prop-listing_id'));
+
+                editLinkElem.appendChild(editIconElem);
+                editElem.appendChild(editLinkElem);
+
+                editLinkElem.onclick = (e) => {
+                    e.preventDefault();
+                    let editFrame = document.getElementsByClassName('listing-iframe')[0] || document.createElement('iframe');
+                    let modalBackdrop = document.createElement('div');
+                    modalBackdrop.setAttribute('class', 'modal-backdrop in');
+                    editFrame.setAttribute('class', 'listing-iframe');
+                    editFrame.setAttribute('src', 'https://poshmark.com/edit-listing/' + tile.getElementsByClassName('tile__covershot')[0].getAttribute('data-et-prop-listing_id'));
+                    editFrame.setAttribute('style', 'width: calc(100vw - 100px); height: calc(100vh - 100px); left: 50px; top: 50px; position: fixed; z-index: 10000; border-radius: 6px;');
+                    document.body.append(modalBackdrop);
+                    document.body.append(editFrame);
+                    let frameIval;
+
+                    let dataTitle;
+                    let dataBrand;
+                    let dataOriginalPrice;
+                    let dataListingPrice;
+                    let dataSize;
+
+                    let publishButton;
+
+                    frameIval = setInterval(() => {
+                        if (editFrame.contentWindow.location.href && !editFrame.contentWindow.location.href.includes('edit-listing')) {
+                            try {
+                                if (!editFrame.contentWindow.document.querySelector('.listing__image .carousel__inner img')) {
+                                    return;
+                                }
+                                tile.querySelector('.tile__covershot img').src = editFrame.contentWindow.document.querySelector('.listing__image .carousel__inner img').src;
+                                tile.querySelector('.tile__details__pipe__size').innerText = editFrame.contentWindow.document.querySelector('.listing__size-selector-con').innerText;
+                            }
+                            catch(err) {
+                            }
+
+                            clearInterval(frameIval);
+                            frameIval = undefined;
+
+                            document.body.removeChild(editFrame);
+                            document.body.removeChild(modalBackdrop);
+                        } else {
+                            try {
+
+                                dataTitle = (editFrame.contentWindow.document.querySelector("input[data-vv-name='title']") || {}).value || dataTitle;
+                                dataBrand = (editFrame.contentWindow.document.querySelector("input[placeholder='Enter the Brand/Designer']") || {}).value || dataBrand;
+                                dataOriginalPrice = (editFrame.contentWindow.document.querySelector("input[data-vv-name='originalPrice']") || {}).value || dataOriginalPrice;
+                                dataListingPrice = (editFrame.contentWindow.document.querySelector("input[data-vv-name='listingPrice']") || {}).value || dataListingPrice;
+
+                                if (!publishButton) {
+                                    publishButton = editFrame.contentWindow.document.querySelector("[data-et-name='list_item']");
+                                    if (publishButton) {
+                                        publishButton.addEventListener('click', () => {
+                                            try {
+                                                tile.querySelector('.tile__title').innerText = dataTitle;
+                                                tile.querySelector(".td--lt").innerText = '$' + dataOriginalPrice;
+                                                tile.querySelector(".fw--bold").innerText = '$' + dataListingPrice;
+                                                tile.querySelector(".tile__details__pipe__brand").innerText = dataBrand;
+                                            }
+                                            catch (err) {
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                            catch(err) {
+                            }
+                        }
+
+                    }, 250);
+                    return false;
+                };
+
+                commentElem.parentElement.setAttribute('style', 'display: none !important');
+                actionsBarElem.insertBefore(editElem, shareElem);
+            }
+
+        }
+
+        // DEPRECATED: OLD TILE MARKUP
         if (actionsListElem && actionsListElem.getElementsByClassName('share-followers').length === 0) {
             // create publish button
             `<li class="d-fl ai-c"><a class="share share-feed"><i class="icon feed"></i></a></li>`
@@ -165,41 +291,6 @@
                 actionsListElem.insertBefore(editElem, shareElem.parentElement);
             }
 
-        }
-
-        if (actionsBarElem && actionsBarElem.getElementsByClassName('social-action-bar__share-followers').length === 0) {
-            // create publish button
-            `<div class="d--fl ai--c social-action-bar__action social-action-bar__share-followers"><i class="icon feed"></i></div>`
-            let shareElem = actionsBarElem.getElementsByClassName('social-action-bar__share')[0];
-            let publishElem = document.createElement('div');
-            let publishIconElem = document.createElement('i');
-
-            publishElem.setAttribute('class', 'd--fl ai--c social-action-bar__action social-action-bar__share-followers share-followers');
-            publishIconElem.setAttribute('class', 'icon feed');
-
-            publishElem.appendChild(publishIconElem);
-            actionsBarElem.appendChild(publishElem);
-
-            shareElem.addEventListener('click', (e) => {
-                publishIconElem.setAttribute('class', 'icon progress-bar-checkmark');
-            });
-
-            publishElem.onclick = (e) => {
-                actionsBarElem.getElementsByClassName('social-action-bar__share')[0].click();
-                publishIconElem.setAttribute('class', 'icon progress-bar-checkmark');
-                let waitIval;
-                waitIval = setInterval(() => {
-                    let shareElem = document.getElementsByClassName('share-wrapper-container')[0];
-                    let shareModal = document.getElementsByClassName('share-modal')[0];
-                    if (shareElem && shareModal) {
-                        // shareModal.setAttribute('style', 'display: none');
-                        clearInterval(waitIval);
-                        setTimeout(() => {
-                            shareElem.click();
-                        }, getRandomInt(500, 1500));
-                    }
-                }, 50);
-            }
         }
     }
 
