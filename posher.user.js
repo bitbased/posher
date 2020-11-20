@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Posher
 // @namespace    posher.bitbased.net
-// @version      0.6
+// @version      0.7
 // @updateURL    https://github.com/bitbased/posher/raw/master/posher.user.js
 // @downloadURL  https://github.com/bitbased/posher/raw/master/posher.user.js
 // @description  Poshmark assistant
