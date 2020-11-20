@@ -67,7 +67,7 @@
                         clearInterval(waitIval);
                         setTimeout(() => {
                             shareElem.click();
-                        }, getRandomInt(500, 1500));
+                        }, getRandomInt(500, 1500) + 1000);
                     }
                 }, 50);
             }
@@ -197,7 +197,7 @@
                         clearInterval(waitIval);
                         setTimeout(() => {
                             shareElem.click();
-                        }, 1000);
+                        }, 1000 + 1000);
                     }
                 }, 50);
             }
@@ -418,7 +418,7 @@
                 } else {
                     endCounter = -1;
                 }
-            }, 1000);
+            }, 1000 + 1000);
 
         }
     }
